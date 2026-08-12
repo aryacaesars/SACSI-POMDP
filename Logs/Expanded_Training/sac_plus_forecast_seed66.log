@@ -1,0 +1,42 @@
+ episode      reward  steps  updates  actor_loss  critic_loss  alpha_loss    alpha
+      96 -425.296397  32256    31757   77.323853   218.877991    0.111631 0.066351
+      97 -507.716585  32592    32093  126.507141  2234.116699    0.654035 0.067558
+      98 -576.591438  32928    32429  118.503616   206.365601    0.027844 0.068071
+      99  293.065615  33264    32765  111.439560   276.388367    0.426722 0.067586
+     100  334.797494  33600    33101  142.091034   312.691956    1.201366 0.067803
+{
+  "model": "SAC + Forecast",
+  "device": "cuda",
+  "seed": 66,
+  "training_period": "2021-2023",
+  "validation_period": "2024",
+  "forecast_protocol": "SF-20_h1_controlled_proxy",
+  "forecast_horizon": 1,
+  "forecast_error": "20%",
+  "reward_version": "reward_v2",
+  "virtual_garden_version": "field_capacity_0.35",
+  "episodes": 100,
+  "episode_length": 336,
+  "selected_episode": 100,
+  "transitions": 33600,
+  "forecast_intervention_action_delta_mm": 0.011155729492505392,
+  "validation_gate": true,
+  "validation_metrics": {
+    "total_irrigation_mm": 558.0754574239254,
+    "time_in_target_pct": 60.45081967213115,
+    "violation_rate_pct": 39.549180327868854,
+    "deficit_rate_pct": 0.0,
+    "surplus_rate_pct": 39.549180327868854,
+    "rmse_band": 0.026858360051246616,
+    "mean_soil_moisture": 0.2978481854894141,
+    "runoff_total_mm": 76.12886915293446,
+    "drainage_total_mm": 1388.3623925376633,
+    "action_smoothness": 0.029725054361466517,
+    "decision_latency_ms": 0.0,
+    "water_use_efficiency": 9.514842355746916,
+    "max_abs_mass_balance_error_mm": 2.842170943040401e-14,
+    "cumulative_reward": -7580.617561634926
+  },
+  "timestamp": "2026-08-12T05:46:13.233699+00:00"
+}
+checkpoint=D:\ARYA\SACSI_Dissertation\Checkpoints\SAC_Forecast\sac_forecast_seed66_reward_v2_sf20_training_ep100.pt

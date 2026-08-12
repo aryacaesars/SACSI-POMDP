@@ -1,0 +1,49 @@
+ episode      reward  steps  updates  actor_loss  critic_loss  alpha_loss    alpha
+       6  332.706039   2016     1517  159.143036   290.800842    1.702612 0.050857
+       7 -313.021773   2352     1853  175.587830   194.342346    1.217558 0.052206
+       8  104.382964   2688     2189  189.923096   328.662903    1.407329 0.053882
+       9  334.810917   3024     2525  123.820534   224.077454    0.702819 0.055210
+      10  124.694540   3360     2861  180.984634   232.882568    0.212589 0.056487
+{
+  "model": "SACSI Full",
+  "device": "cuda",
+  "seed": 110,
+  "training_period": "2021-2023",
+  "validation_period": "2024",
+  "sequence_length": 24,
+  "forecast_horizon": 1,
+  "forecast_protocol": "SF-20_h1_controlled_proxy",
+  "training_strategy": "Multi-Context Residual Recurrent Warm-Start",
+  "warm_start_checkpoint": "Checkpoints\\SAC_Basic\\sac_basic_seed110_reward_v2_training_ep100.pt",
+  "reward_version": "reward_v2",
+  "virtual_garden_version": "field_capacity_0.35",
+  "episodes": 10,
+  "episode_length": 336,
+  "selected_episode": 4,
+  "transitions": 3360,
+  "history_residual_norm": 0.166810542345047,
+  "forecast_residual_norm": 0.1315559446811676,
+  "zero_history_action_delta_mm": 0.0013246750902561914,
+  "reverse_history_action_delta_mm": 0.0010400096930208661,
+  "zero_forecast_action_delta_mm": 0.0011862854340246745,
+  "zero_context_action_delta_mm": 0.001457736250900087,
+  "validation_gate": true,
+  "validation_metrics": {
+    "total_irrigation_mm": 551.5939605534077,
+    "time_in_target_pct": 60.82650273224044,
+    "violation_rate_pct": 39.17349726775956,
+    "deficit_rate_pct": 0.0,
+    "surplus_rate_pct": 39.17349726775956,
+    "rmse_band": 0.026809941954102735,
+    "mean_soil_moisture": 0.3001853227699273,
+    "runoff_total_mm": 75.32018303968887,
+    "drainage_total_mm": 1382.1465273550566,
+    "action_smoothness": 0.03362356985971242,
+    "decision_latency_ms": 0.0,
+    "water_use_efficiency": 9.686472989369628,
+    "max_abs_mass_balance_error_mm": 2.842170943040401e-14,
+    "cumulative_reward": -7507.614342860118
+  },
+  "timestamp": "2026-08-12T08:03:06.217944+00:00"
+}
+checkpoint=D:\ARYA\SACSI_Dissertation\Checkpoints\SACSI_Full\sacsi_full_seed110_reward_v2_sf20_rrws_k24_training_ep10.pt

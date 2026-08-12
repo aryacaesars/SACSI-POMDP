@@ -1,0 +1,46 @@
+ episode      reward  steps  updates  actor_loss  critic_loss  alpha_loss    alpha
+       6 -555.360194   2016     1517   46.612896    58.205177    0.283958 0.042035
+       7  335.350332   2352     1853   35.436356    27.262520    0.793600 0.042940
+       8 -442.661904   2688     2189   52.114594    20.964844    0.405543 0.044071
+       9  335.449552   3024     2525   47.716591    17.789310   -0.240254 0.044852
+      10  334.958275   3360     2861   20.282204    12.691628   -0.896338 0.045012
+{
+  "model": "SAC + LSTM",
+  "device": "cuda",
+  "seed": 66,
+  "training_period": "2021-2023",
+  "validation_period": "2024",
+  "sequence_length": 24,
+  "lstm_hidden_dim": 64,
+  "training_strategy": "Residual Recurrent Warm-Start (RRWS)",
+  "warm_start_checkpoint": "Checkpoints\\SAC_Basic\\sac_basic_seed66_reward_v2_training_ep100.pt",
+  "reward_version": "reward_v2",
+  "virtual_garden_version": "field_capacity_0.35",
+  "episodes": 10,
+  "episode_length": 336,
+  "selected_episode": 10,
+  "transitions": 3360,
+  "context_residual_norm": 0.5358659625053406,
+  "zero_history_action_delta_mm": 0.014836110085958526,
+  "reverse_history_action_delta_mm": 0.009030855393835477,
+  "shuffle_history_action_delta_mm": 0.007997679391077586,
+  "validation_gate": true,
+  "validation_metrics": {
+    "total_irrigation_mm": 566.7119650244713,
+    "time_in_target_pct": 58.333333333333336,
+    "violation_rate_pct": 41.66666666666667,
+    "deficit_rate_pct": 0.0,
+    "surplus_rate_pct": 41.66666666666667,
+    "rmse_band": 0.026989842925950188,
+    "mean_soil_moisture": 0.3064379429146208,
+    "runoff_total_mm": 75.16165582593975,
+    "drainage_total_mm": 1394.0995662451742,
+    "action_smoothness": 0.017072075699044294,
+    "decision_latency_ms": 0.0,
+    "water_use_efficiency": 9.041630168826133,
+    "max_abs_mass_balance_error_mm": 2.842170943040401e-14,
+    "cumulative_reward": -8023.817815181008
+  },
+  "timestamp": "2026-08-12T07:33:17.009617+00:00"
+}
+checkpoint=D:\ARYA\SACSI_Dissertation\Checkpoints\SAC_LSTM\sac_lstm_seed66_reward_v2_rrws_k24_training_ep10.pt
