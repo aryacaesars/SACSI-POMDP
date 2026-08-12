@@ -25,7 +25,9 @@ from Dashboard.data import (
     load_logs,
     load_metrics,
     load_statistics,
+    localize_columns,
     png_chart_config,
+    translate,
 )
 
 
@@ -76,3 +78,12 @@ def test_final_dashboard_registry_logs_and_experiment_exports() -> None:
     config = png_chart_config("soil_moisture")
     assert config["toImageButtonOptions"]["format"] == "png"
     assert config["toImageButtonOptions"]["filename"] == "soil_moisture"
+
+
+def test_dashboard_indonesian_translation_and_column_labels() -> None:
+    assert translate("Overview", "Bahasa Indonesia") == "Ringkasan"
+    assert translate("SACSI Full", "Bahasa Indonesia") == "SACSI Full"
+    frame = pd.DataFrame({"method": ["SACSI Full"], "time_in_target_pct": [55.0]})
+    assert localize_columns(frame, "Bahasa Indonesia").columns.tolist() == [
+        "metode", "waktu_dalam_target_pct",
+    ]
