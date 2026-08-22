@@ -2,7 +2,15 @@
 
 from __future__ import annotations
 
+from pathlib import Path
+import sys
+
 import streamlit as st
+
+
+ROOT = Path(__file__).resolve().parents[1]
+if str(ROOT) not in sys.path:
+    sys.path.insert(0, str(ROOT))
 
 from Dashboard.data import UI_PAGE_NAMES, load_dashboard_release, translate
 from Dashboard.views import render_page
