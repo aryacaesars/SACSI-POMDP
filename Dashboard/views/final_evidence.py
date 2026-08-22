@@ -20,6 +20,7 @@ from Dashboard.data import (
     summarize_runs,
     translate,
 )
+from Dashboard.views.virtual_garden import render_virtual_garden
 
 
 def say(language: str, english: str, indonesian: str) -> str:
@@ -259,6 +260,7 @@ def reproducibility(language, registry, metadata, **_):
 
 
 RENDERERS = {
+    "Virtual Garden": render_virtual_garden,
     PAGE_NAMES[0]: research_design,
     PAGE_NAMES[1]: reward_lab,
     PAGE_NAMES[2]: simple_cases,

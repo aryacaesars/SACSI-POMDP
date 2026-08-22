@@ -13,6 +13,7 @@ sys.path.insert(0, str(ROOT))
 
 from Dashboard.data import (
     PAGE_NAMES,
+    UI_PAGE_NAMES,
     build_result_registry,
     export_csv,
     export_experiment_zip,
@@ -29,12 +30,14 @@ from Dashboard.data import (
     load_logs,
     load_metrics,
     load_statistics,
+    load_virtual_garden_registry,
     localize_columns,
     png_chart_config,
     summarize_runs,
     translate,
 )
-from Dashboard.pages import RENDERERS
+from Dashboard.views import RENDERERS
+from Dashboard.views.virtual_garden import _moisture_gauge, _ordered_snapshot, _status
 
 
 def test_dashboard_data_filter_and_exports() -> None:
@@ -87,13 +90,59 @@ def test_final_dashboard_registry_logs_and_experiment_exports() -> None:
     assert config["toImageButtonOptions"]["filename"] == "soil_moisture"
 
 
+def test_virtual_garden_registry_includes_confirmatory_ddpg_and_td3() -> None:
+    registry = load_virtual_garden_registry()
+    assert len(registry) == 65
+    assert registry["method"].nunique() == 11
+    assert set(registry.loc[registry["trajectory_protocol"] == "confirmatory_reward_v4", "method"]) == {
+        "DDPG", "TD3",
+    }
+
+    logs = load_final_logs(["DDPG", "TD3"], seed=11)
+    filtered = filter_dates(logs, date(2025, 1, 1), date(2025, 1, 2))
+    assert len(filtered) == 96
+    assert set(filtered["controller"]) == {"DDPG", "TD3"}
+
+
 def test_dashboard_indonesian_translation_and_column_labels() -> None:
+    assert translate("Virtual Garden", "Bahasa Indonesia") == "Kebun Virtual"
     assert translate("Overview", "Bahasa Indonesia") == "Ringkasan"
     assert translate("SACSI Full", "Bahasa Indonesia") == "SACSI Full"
     frame = pd.DataFrame({"method": ["SACSI Full"], "time_in_target_pct": [55.0]})
     assert localize_columns(frame, "Bahasa Indonesia").columns.tolist() == [
         "metode", "waktu_dalam_target_pct",
     ]
+
+
+def test_virtual_garden_status_and_gauge_follow_locked_target_band() -> None:
+    assert _status(0.21, "English") == ("🥀", "Below target")
+    assert _status(0.27, "Bahasa Indonesia") == ("🌱", "Di dalam target")
+    assert _status(0.33, "English") == ("🌿", "Above target")
+    gauge = _moisture_gauge("SACSI Full", 0.27, "English")
+    assert gauge.data[0]["value"] == 0.27
+    assert gauge.data[0]["gauge"]["bar"]["color"] == "#2E7D32"
+    assert gauge.data[0]["gauge"]["steps"][1]["range"] == (0.22, 0.32)
+    assert _moisture_gauge("dry", 0.21, "English").data[0]["gauge"]["bar"]["color"] == "#E65100"
+    assert _moisture_gauge("wet", 0.33, "English").data[0]["gauge"]["bar"]["color"] == "#1565C0"
+
+
+def test_virtual_garden_snapshot_follows_compare_selection_order() -> None:
+    timestamp = pd.Timestamp("2025-01-01 00:00:00")
+    view = pd.DataFrame({
+        "timestamp": [timestamp] * 3,
+        "controller": ["TD3", "SACSI Full", "DDPG"],
+        "theta": [0.31, 0.27, 0.23],
+    })
+
+    snapshot = _ordered_snapshot(view, timestamp, ["SACSI Full", "DDPG", "TD3"])
+
+    assert snapshot["controller"].tolist() == ["SACSI Full", "DDPG", "TD3"]
+    assert snapshot["theta"].tolist() == [0.27, 0.23, 0.31]
+
+
+def test_custom_navigation_has_no_streamlit_auto_page_modules() -> None:
+    auto_pages = ROOT / "Dashboard" / "pages"
+    assert not auto_pages.exists() or not list(auto_pages.glob("*.py"))
 
 
 def test_module_9a_release_is_ready_and_reconciles_confirmatory_results() -> None:
@@ -103,7 +152,8 @@ def test_module_9a_release_is_ready_and_reconciles_confirmatory_results() -> Non
     assert len(matrix) == 12
     assert matrix["readiness_status"].eq("READY").all()
     assert not registry["synthetic_fixture"].astype(bool).any()
-    assert set(RENDERERS) == set(PAGE_NAMES)
+    assert UI_PAGE_NAMES[0] == "Virtual Garden"
+    assert set(RENDERERS) == set(UI_PAGE_NAMES)
 
     main, factorial, friedman, planned, effects, findings = load_confirmatory_evidence()
     main_summary = summarize_runs(main, "model")

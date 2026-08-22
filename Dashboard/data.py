@@ -18,6 +18,7 @@ LOGS_DIR = ROOT / "Logs" / "Baselines"
 FINAL_RUNS = ROOT / "Results" / "Final_Experiment" / "benchmark_2025_runs.csv"
 FINAL_SUMMARY = ROOT / "Results" / "Final_Experiment" / "benchmark_2025_summary.csv"
 FINAL_LOGS = ROOT / "Logs" / "Final_Experiment"
+DASHBOARD_TRAJECTORIES = ROOT / "Results" / "Dashboard" / "Trajectories"
 ABLATION_SUMMARY = ROOT / "Results" / "Ablation_Robustness" / "ablation_robustness_summary.csv"
 FACTORIAL_STATS = ROOT / "Statistics" / "factorial_rm_anova_primary.csv"
 PAIRWISE_STATS = ROOT / "Statistics" / "pairwise_sacsi_primary.csv"
@@ -31,6 +32,21 @@ REWARD_RESULTS = ROOT / "Results" / "Reward_Validation"
 SIMPLE_RESULTS = ROOT / "Results" / "Simple_Case_Validation"
 REVIEWER_DOCS = ROOT / "Docs" / "Reviewer_Alignment"
 
+VIRTUAL_GARDEN_METHODS = (
+    "No Irrigation",
+    "Fixed Schedule",
+    "Threshold-Based",
+    "Rule-Based Forecast-Aware",
+    "Fuzzy Controller",
+    "DDPG",
+    "TD3",
+    "SAC Basic",
+    "SAC + Forecast",
+    "SAC + LSTM",
+    "SACSI Full",
+)
+CONFIRMATORY_REPLAY_METHODS = {"DDPG", "TD3"}
+
 PAGE_NAMES = (
     "Research Design",
     "Reward Lab",
@@ -42,6 +58,10 @@ PAGE_NAMES = (
     "Reviewer Evidence Matrix",
     "Reproducibility & Provenance",
 )
+
+# UI-only page. It visualizes frozen trajectories but is not a new evidence source,
+# so the locked Module 9A evidence registry above remains unchanged.
+UI_PAGE_NAMES = ("Virtual Garden", *PAGE_NAMES)
 
 EVIDENCE_SPECS = (
     ("8A", "research_design", "Docs/Reviewer_Alignment/research_question_objective_map.csv", PAGE_NAMES[0]),
@@ -74,6 +94,7 @@ INDONESIAN = {
     "SACSI-POMDP Final Evidence Dashboard": "Dashboard Evidence Final SACSI-POMDP",
     "Reviewer-oriented evidence from Modules 8A–8H": "Evidence berorientasi reviewer dari Modul 8A–8H",
     "Dashboard Page": "Halaman Dashboard",
+    "Virtual Garden": "Kebun Virtual",
     "Research Design": "Desain Penelitian",
     "Reward Lab": "Lab Reward",
     "Simple-Case & Raw-Data Validation": "Validasi Simple-Case & Raw-Data",
@@ -226,6 +247,42 @@ def load_selected_registry(methods: list[str], seed: int) -> pd.DataFrame:
     return selected
 
 
+def load_virtual_garden_registry() -> pd.DataFrame:
+    historical, _ = load_final_registry()
+    historical = historical[["method", "method_type", "seed"]].copy()
+    historical["trajectory_protocol"] = "historical_sprint13"
+
+    confirmatory = pd.read_csv(CONFIRMATORY / "main_10seed_results_2025.csv")
+    confirmatory = confirmatory.loc[
+        confirmatory["model"].isin(CONFIRMATORY_REPLAY_METHODS), ["model", "seed"]
+    ].rename(columns={"model": "method"})
+    confirmatory["method_type"] = "rl"
+    confirmatory["trajectory_protocol"] = "confirmatory_reward_v4"
+
+    registry = pd.concat((historical, confirmatory), ignore_index=True)
+    if (
+        len(registry) != 65
+        or set(registry["method"]) != set(VIRTUAL_GARDEN_METHODS)
+        or registry.loc[registry["method_type"] == "rl"].duplicated(["method", "seed"]).any()
+    ):
+        raise ValueError("Virtual Garden registry must contain 11 methods and all RL seeds")
+    return registry
+
+
+def load_selected_virtual_registry(methods: list[str], seed: int) -> pd.DataFrame:
+    runs = load_virtual_garden_registry()
+    baseline = runs["method_type"].eq("baseline") & runs["method"].isin(methods)
+    rl = (
+        runs["method_type"].eq("rl")
+        & runs["method"].isin(methods)
+        & pd.to_numeric(runs["seed"], errors="coerce").eq(seed)
+    )
+    selected = runs.loc[baseline | rl].copy()
+    if set(selected["method"]) != set(methods):
+        raise ValueError("Selected method/seed is missing from the Virtual Garden registry")
+    return selected
+
+
 def _weather_context() -> pd.DataFrame:
     weather = pd.read_csv(WEATHER_2025, usecols=["timestamp", "precipitation_mm"], parse_dates=["timestamp"])
     weather = weather.rename(columns={"precipitation_mm": "actual_precipitation_mm"})
@@ -239,13 +296,20 @@ def _weather_context() -> pd.DataFrame:
 
 
 def load_final_logs(methods: list[str], seed: int) -> pd.DataFrame:
-    registry = load_selected_registry(methods, seed)
+    registry = load_selected_virtual_registry(methods, seed)
     frames = []
     for row in registry.itertuples(index=False):
         suffix = f"_seed{seed}" if row.method_type == "rl" else ""
-        path = FINAL_LOGS / f"benchmark_2025_{method_slug(row.method)}{suffix}.csv"
+        directory = (
+            DASHBOARD_TRAJECTORIES
+            if row.method in CONFIRMATORY_REPLAY_METHODS
+            else FINAL_LOGS
+        )
+        path = directory / f"benchmark_2025_{method_slug(row.method)}{suffix}.csv"
         if not path.exists():
-            raise FileNotFoundError(f"Run final benchmark first: missing {path.name}")
+            raise FileNotFoundError(
+                f"Build Virtual Garden trajectories first: missing {path.name}"
+            )
         frame = pd.read_csv(path, parse_dates=["timestamp"])
         frame["controller"] = row.method
         frame["display_seed"] = str(seed) if row.method_type == "rl" else "deterministic"
