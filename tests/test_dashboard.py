@@ -14,6 +14,7 @@ sys.path.insert(0, str(ROOT))
 from Dashboard.data import (
     PAGE_NAMES,
     UI_PAGE_NAMES,
+    _evidence_hash_variants,
     build_result_registry,
     export_csv,
     export_experiment_zip,
@@ -54,6 +55,15 @@ def test_dashboard_data_filter_and_exports() -> None:
     assert export_csv(filtered).startswith(b"timestamp,")
     assert export_json(filtered).startswith(b"[")
     assert export_xlsx(filtered).startswith(b"PK")
+
+
+def test_dashboard_evidence_hash_allows_only_newline_conversion() -> None:
+    windows_hashes = _evidence_hash_variants(b"value\r\n1\r\n")
+    linux_hashes = _evidence_hash_variants(b"value\n1\n")
+    changed_hashes = _evidence_hash_variants(b"value\n2\n")
+
+    assert windows_hashes == linux_hashes
+    assert windows_hashes.isdisjoint(changed_hashes)
 
 
 def test_final_dashboard_registry_logs_and_experiment_exports() -> None:

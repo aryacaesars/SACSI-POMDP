@@ -347,6 +347,18 @@ def sha256_file(path: Path) -> str:
     return digest.hexdigest()
 
 
+def _evidence_hash_variants(content: bytes) -> set[str]:
+    normalized = content.replace(b"\r\n", b"\n").replace(b"\r", b"\n")
+    variants = (content, normalized, normalized.replace(b"\n", b"\r\n"))
+    return {hashlib.sha256(value).hexdigest() for value in variants}
+
+
+def _evidence_hash_matches(path: Path, expected: str) -> bool:
+    if path.suffix.lower() in {".csv", ".json", ".md"}:
+        return expected in _evidence_hash_variants(path.read_bytes())
+    return sha256_file(path) == expected
+
+
 def _synthetic_fixture_path(path: Path) -> bool:
     lowered = path.as_posix().lower()
     return (
@@ -487,7 +499,7 @@ def load_dashboard_release() -> tuple[pd.DataFrame, pd.DataFrame, dict]:
     mismatches = []
     for row in registry.itertuples(index=False):
         path = ROOT / row.evidence_path
-        if not path.is_file() or sha256_file(path) != row.sha256:
+        if not path.is_file() or not _evidence_hash_matches(path, row.sha256):
             mismatches.append(row.evidence_path)
     if (
         mismatches
