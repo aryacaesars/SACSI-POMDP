@@ -59,9 +59,16 @@ PAGE_NAMES = (
     "Reproducibility & Provenance",
 )
 
-# UI-only page. It visualizes frozen trajectories but is not a new evidence source,
-# so the locked Module 9A evidence registry above remains unchanged.
-UI_PAGE_NAMES = ("Virtual Garden", *PAGE_NAMES)
+METHOD_SUPERIORITY_PAGE = "Method Superiority Analysis"
+
+# UI-only analytical consumers are not new evidence sources, so the locked
+# Module 9A evidence registry remains unchanged.
+UI_PAGE_NAMES = (
+    "Virtual Garden",
+    *PAGE_NAMES[:5],
+    METHOD_SUPERIORITY_PAGE,
+    *PAGE_NAMES[5:],
+)
 
 EVIDENCE_SPECS = (
     ("8A", "research_design", "Docs/Reviewer_Alignment/research_question_objective_map.csv", PAGE_NAMES[0]),
@@ -100,6 +107,7 @@ INDONESIAN = {
     "Simple-Case & Raw-Data Validation": "Validasi Simple-Case & Raw-Data",
     "Fair DRL Benchmark": "Benchmark DRL Fair",
     "POMDP Contribution": "Kontribusi POMDP",
+    "Method Superiority Analysis": "Analisis Superioritas Metode",
     "10-Seed Confirmatory Statistics": "Statistik Konfirmatori 10-Seed",
     "Robustness & Context Diagnostics": "Robustness & Diagnostik Konteks",
     "Reviewer Evidence Matrix": "Matriks Evidence Reviewer",
@@ -190,6 +198,21 @@ INDONESIAN = {
     "p_value": "nilai_p",
     "significant_alpha_0_05": "signifikan_alpha_0_05",
     "comparison": "perbandingan",
+    "compared_with": "dibandingkan_dengan",
+    "decision": "keputusan",
+    "decision_scope": "ruang_lingkup_keputusan",
+    "objective": "objektif",
+    "direction": "arah",
+    "leader": "pemimpin",
+    "value": "nilai",
+    "evidence_level": "tingkat_evidence",
+    "claim_guard": "batas_klaim",
+    "pareto_status": "status_pareto",
+    "pareto_role": "peran_pareto",
+    "dominated_by": "didominasi_oleh",
+    "pareto_non_dominated": "pareto_non_dominated",
+    "primary_p_holm": "p_holm_primer",
+    "cohens_dz": "cohen_dz",
     "mean_difference_pp": "selisih_rerata_pp",
     "significant_holm_0_05": "signifikan_holm_0_05",
 }
@@ -557,7 +580,13 @@ def load_confirmatory_evidence() -> tuple[pd.DataFrame, pd.DataFrame, pd.DataFra
 
 def summarize_runs(frame: pd.DataFrame, group: str) -> pd.DataFrame:
     summary = frame.groupby(group, sort=False)[
-        ["time_in_target_pct", "total_irrigation_mm", "rmse_band", "violation_rate_pct"]
+        [
+            "time_in_target_pct",
+            "total_irrigation_mm",
+            "rmse_band",
+            "violation_rate_pct",
+            "action_smoothness",
+        ]
     ].agg(["mean", "std"])
     summary.columns = [f"{metric}_{stat}" for metric, stat in summary.columns]
     return summary.reset_index()

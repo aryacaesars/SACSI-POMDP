@@ -12,6 +12,7 @@ ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
 
 from Dashboard.data import (
+    METHOD_SUPERIORITY_PAGE,
     PAGE_NAMES,
     UI_PAGE_NAMES,
     _evidence_hash_variants,
@@ -116,6 +117,7 @@ def test_virtual_garden_registry_includes_confirmatory_ddpg_and_td3() -> None:
 
 def test_dashboard_indonesian_translation_and_column_labels() -> None:
     assert translate("Virtual Garden", "Bahasa Indonesia") == "Kebun Virtual"
+    assert translate(METHOD_SUPERIORITY_PAGE, "Bahasa Indonesia") == "Analisis Superioritas Metode"
     assert translate("Overview", "Bahasa Indonesia") == "Ringkasan"
     assert translate("SACSI Full", "Bahasa Indonesia") == "SACSI Full"
     frame = pd.DataFrame({"method": ["SACSI Full"], "time_in_target_pct": [55.0]})
@@ -163,6 +165,7 @@ def test_module_9a_release_is_ready_and_reconciles_confirmatory_results() -> Non
     assert matrix["readiness_status"].eq("READY").all()
     assert not registry["synthetic_fixture"].astype(bool).any()
     assert UI_PAGE_NAMES[0] == "Virtual Garden"
+    assert METHOD_SUPERIORITY_PAGE in UI_PAGE_NAMES
     assert set(RENDERERS) == set(UI_PAGE_NAMES)
 
     main, factorial, friedman, planned, effects, findings = load_confirmatory_evidence()
